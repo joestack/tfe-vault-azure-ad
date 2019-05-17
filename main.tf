@@ -37,7 +37,7 @@ resource "azurerm_public_ip" "demo" {
   name                 = "demo-pup-ip"
   location             = "${azurerm_resource_group.demo.location}"
   resource_group_name  = "${azurerm_resource_group.demo.name}"
-  public_ip_address_allocation    = "Dynamic"
+  allocation_method    = "Dynamic"
   tags = {
     environment = "${var.environment}"
     costcenter  = "${var.costcenter}"
