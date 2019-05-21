@@ -36,9 +36,4 @@ resource "azurerm_virtual_machine" "vault" {
         key_data = "${var.ssh_keys}"
     }
   }
-
-  boot_diagnostics = {
-    enabled     = "true"
-    storage_uri = "${azurerm_storage_account.demo.primary_blob_endpoint}"
-  }
 }
