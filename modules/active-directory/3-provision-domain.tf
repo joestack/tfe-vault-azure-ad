@@ -12,7 +12,7 @@ locals {
 // NOTE: we **highly recommend** not using this configuration for your Production Environment
 // this provisions a single node configuration with no redundancy.
 resource "azurerm_virtual_machine_extension" "create-active-directory-forest" {
-  name                 = "${var.prefix}-forest"
+  # name                 = "${var.prefix}-forest"
   location             = "${azurerm_virtual_machine.domain-controller.location}"
   resource_group_name  = "${var.resource_group_name}"
   virtual_machine_name = "${azurerm_virtual_machine.domain-controller.name}"
