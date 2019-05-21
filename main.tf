@@ -55,4 +55,5 @@ module "vault-server" {
   subnet_id                 = "${module.network.domain_clients_subnet_id}"
   active_directory_domain   = "${var.prefix}.local"
   admin_username            = "${var.admin_username}"
+  ssh_keys                  = "${var.ssh_keys}"
 }

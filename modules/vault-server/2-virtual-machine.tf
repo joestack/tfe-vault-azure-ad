@@ -41,9 +41,4 @@ resource "azurerm_virtual_machine" "vault" {
     enabled     = "true"
     storage_uri = "${azurerm_storage_account.demo.primary_blob_endpoint}"
   }
-
-  tags = {
-    environment = "${var.environment}"
-    costcenter  = "${var.costcenter}"
-  }
 }
