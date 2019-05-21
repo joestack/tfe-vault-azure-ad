@@ -10,16 +10,6 @@ variable "admin_password" {
   description = "The password of the administrator account for both the local accounts, and Active Directory accounts. Needs to comply with the Windows Password Policy. Example: `PassW0rd1234!`"
 }
 
-variable "environment" {
-  description = "Environment For Deployment"
-  default = "demo"
-}
-
-variable "costcenter" {
-  description = "Cost Center For This Deployment"
-  default = "demo"
-}
-
 variable "location" {
   description = "Azure location in which to create resources"
   default = "East US"
