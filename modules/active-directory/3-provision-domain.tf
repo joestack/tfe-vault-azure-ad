@@ -1,5 +1,6 @@
 // the `exit_code_hack` is to keep the VM Extension resource happy
 locals {
+  dc_virtual_machine_name = "${var.prefix}-dc"
   import_command       = "Import-Module ADDSDeployment"
   password_command     = "$password = ConvertTo-SecureString ${var.admin_password} -AsPlainText -Force"
   install_ad_command   = "Add-WindowsFeature -name AD-Domain-Services -IncludeManagementTools"
