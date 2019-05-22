@@ -33,7 +33,8 @@ module "ad-create" {
   admin_username = "${var.admin_username}"
   location = "${var.location}"
   prefix = "${var.prefix}"
-  private_ip_address = "${cidrhost(module.network.subnet1, 10)}"
+  #private_ip_address = "${cidrhost(module.network.subnet1, 10)}"
+  private_ip_address = "10.0.1.10"
   resource_group_name = "${var.resource_group_name}"
-  subnet_id = "${module.network.subnet1.id}"
+  subnet_id = "${module.network.subnet1_id}"
 }
