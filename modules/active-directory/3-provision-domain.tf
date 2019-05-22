@@ -20,6 +20,7 @@ resource "azurerm_virtual_machine_extension" "create-active-directory-forest" {
   publisher            = "Microsoft.Compute"
   type                 = "CustomScriptExtension"
   type_handler_version = "1.9"
+  depends_on           = ["azurerm_virtual_machine.domain-controller"]
 
   settings = <<SETTINGS
     {
