@@ -1,58 +1,75 @@
-terraform {
-  required_version = ">= 0.11.1"
-}
+variable "resource_group_name" {}
+variable "environment_tag" {}
+variable "location" {}
+variable "admin_username" {}
+variable "admin_password" {}
+variable "prefix" {}
 
-provider "azurerm" {
-  version = "=1.28.0 "
-}
 
-locals {
-  resource_group_name = "${var.prefix}-resources"
-}
 
-resource "azurerm_resource_group" "demo" {
-  name     = "${local.resource_group_name}"
-  location = "${var.location}"
-}
+
+
+
+
 
 module "network" {
-  source              = "./modules/network"
-  prefix              = "${var.prefix}"
-  resource_group_name = "${azurerm_resource_group.demo.name}"
-  location            = "${azurerm_resource_group.demo.location}"
+  source  = "app.terraform.io/JoeStack/network/azurerm"
+  version = "2.0.0"
+  location            = "${var.location}"
+  resource_group_name = "${var.resource_group_name}"
+  address_space       = "10.0.0.0/16"
+  subnet_prefixes     = ["10.0.1.0/24"]
+  subnet_names        = ["${var.prefix}subnet1"]
+
+  tags                = {
+                          environment = "${var.environment_tag}"
+                        }
 }
 
-module "active-directory-domain" {
-  source                        = "./modules/active-directory"
-  resource_group_name           = "${azurerm_resource_group.demo.name}"
-  location                      = "${azurerm_resource_group.demo.location}"
-  prefix                        = "${var.prefix}"
-  subnet_id                     = "${module.network.domain_controllers_subnet_id}"
-  active_directory_domain       = "${var.prefix}.local"
-  active_directory_netbios_name = "${var.prefix}"
-  admin_username                = "${var.admin_username}"
-  admin_password                = "${var.admin_password}"
+module "ad-create" {
+  source  = "app.terraform.io/JoeStack/ad-create/azurerm"
+  version = "1.0.0"
+  admin_password = "${var.admin_password}"
+  admin_username = "${var.admin_username}"
+  location = "${var.location}"
+  prefix = "${var.prefix}"
+#  #private_ip_address = "${cidrhost(module.network.subnet1, 10)}"
+  private_ip_address = "10.0.1.10"
+  resource_group_name = "${var.resource_group_name}"
+  subnet_id = "${module.network.vnet_subnets[0]}"
+  #subnet_id = "${module.network.azurerm_subnet.0.id}"
 }
 
-module "windows-client" {
-  source                    = "./modules/windows-client"
-  resource_group_name       = "${azurerm_resource_group.demo.name}"
-  location                  = "${azurerm_resource_group.demo.location}"
-  prefix                    = "${var.prefix}"
-  subnet_id                 = "${module.network.domain_clients_subnet_id}"
-  active_directory_domain   = "${var.prefix}.local"
-  active_directory_username = "${var.admin_username}"
-  active_directory_password = "${var.admin_password}"
-  admin_username            = "${var.admin_username}"
-  admin_password            = "${var.admin_password}"
+resource "azurerm_subnet" "subnet" {
+  name  = "subnet1"
+  address_prefix = "10.0.1.0/24"
+  resource_group_name = "${var.resource_group_name}"
+  virtual_network_name = "${var.prefix}vnet"
+  network_security_group_id = "${azurerm_network_security_group.rdp.id}"
 }
 
-# module "vault-server" {
-#   source                    = "./modules/vault-server"
-#   resource_group_name       = "${azurerm_resource_group.demo.name}"
-#   location                  = "${azurerm_resource_group.demo.location}"
-#   prefix                    = "${var.prefix}"
-#   subnet_id                 = "${module.network.domain_clients_subnet_id}"
-#   admin_username            = "${var.admin_username}"
-#   ssh_keys                  = "${var.ssh_keys}"
-# }
+resource "azurerm_network_security_group" "rdp" {
+  depends_on          = ["module.network"]
+  name                = "${var.prefix}rdp-sg"
+  location            = "${var.location}"
+  resource_group_name = "${var.resource_group_name}"
+
+  security_rule {
+    name                       = "rdp"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3389"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+}
+output "sn1_id" {
+  value = "${module.network.vnet_subnets[0]}"
+}
+output "advm_public_ip" {
+  value = "${module.ad-create.ad_public_ip}"
+}
